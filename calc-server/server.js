@@ -6,6 +6,7 @@ var l = require('lodash');
 var heapdump = require('heapdump');
 
 var clients = [];
+var freeIds = [];
 var nextid = 0;
 var ops = {
   '+': plus,
@@ -46,7 +47,7 @@ function onConnection(ws) {
         heapdump.writeSnapshot('/tmp/before.heapsnapshot');
     }
 
-  var id = nextid;
+  var id = freeIds.pop() || nextid;
   nextid++;
   clients[id] = {connection: ws, ops: []};
 
@@ -62,7 +63,9 @@ function onConnection(ws) {
   });
 
   ws.on('close', function close(code, clientId) {
-    delete clients[clientId || id];
+    clientId = clientId || id;
+    delete clients[clientId];
+    freeIds.push(clientId);
     console.log('disconnected', arguments);
   });
 }
