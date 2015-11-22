@@ -1,14 +1,13 @@
-var util = require('util');
-var http = require('http');
+var util = require('util'),
+    http = require('http'),
+    items = require('./items'),
+    work = require('./work'),
+    port = 9999;
 
-var items = require('./items');
-var work = require('./work');
-
-var port = 9999;
 http.createServer(onRequest).listen(port, onReady);
 
 function onReady() {
-  console.log('Server listening on port', port);
+    console.log('Server listening on port', port);
 }
 
 function onRequest(req, res) {
@@ -24,3 +23,4 @@ function onRequest(req, res) {
     res.end();
   }
 }
+

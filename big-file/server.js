@@ -32,11 +32,14 @@ function onRequest(req, res) {
   // --- FIX ME! -------------------------------------------------------------
   // -------------------------------------------------------------------------
   // This bit makes the program crash
-  fs.readFile(filePath, function(err, data) {
-    if (err) throw err;
-    res.write(data);
-    res.end();
-  });
+  var readStream = fs.createReadStream(filePath);
+    readStream.on('error', function(error) {
+        //error handling
+        throw error;
+    });
+    readStream.pipe(res);
+
+
   // -------------------------------------------------------------------------
   // -------------------------------------------------------------------------
 }
@@ -155,4 +158,3 @@ function create(cb) {
     }
   }
 }
-

@@ -3,6 +3,7 @@
 var WS = require('ws').Server;
 var wss = new WS({ port: 8080 });
 var l = require('lodash');
+var heapdump = require('heapdump');
 
 var clients = [];
 var nextid = 0;
@@ -40,6 +41,11 @@ function div(args) {
 }
 
 function onConnection(ws) {
+    if (!clients.length) {
+        console.log('snapshot taken');
+        heapdump.writeSnapshot('/tmp/before.heapsnapshot');
+    }
+
   var id = nextid;
   nextid++;
   clients[id] = {connection: ws, ops: []};
@@ -54,11 +60,19 @@ function onConnection(ws) {
 
     console.log('id: %s, op: %s', id, message);
   });
+
+  ws.on('close', function close(code, clientId) {
+    delete clients[clientId || id];
+    console.log('disconnected', arguments);
+  });
 }
 
 process.on('SIGTERM', cleanup);
 process.on('SIGINT', cleanup);
-
+process.on('SIGUSR2', function() {
+    console.log('SIGUSR2 fired');
+    heapdump.writeSnapshot('/tmp/after.heapsnapshot');
+});
 function cleanup() {
   clients.forEach(function(client) {
     client.connection.close();

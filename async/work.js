@@ -1,4 +1,5 @@
-var async = require('async');
+var async = require('async'),
+    timers = require('timers');
 
 module.exports = work;
 
@@ -16,10 +17,25 @@ function work(items, reportProgress, done) {
 
     // Simulate a little local processing e.g. producing a request
     var d = Date.now();
-    while (Date.now() - d < 4);
+
+      countDown(d, function(time) {
+        if(time < d - 4000) {
+            done();
+            setTimeout(cb, 100);
+        }
+    });
 
     // Simulate remote processing e.g. db operation
-    setTimeout(cb, 100);
+
   }
 }
 
+function countDown(time, cb) {
+    var newTime = time - 1000;
+    timers.setImmediate(cb, newTime);
+}
+
+process.on('SIGUSR2', function() {
+    console.log('SIGUSR2 fired');
+    heapdump.writeSnapshot('/tmp/after.heapsnapshot');
+});
